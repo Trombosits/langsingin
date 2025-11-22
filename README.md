@@ -1,6 +1,6 @@
 # langsingin
 
-A new Flutter project.
+An application Project about tracking calorie n nutrient for maintaining healthy lifestyle
 
 ## Getting Started
 
