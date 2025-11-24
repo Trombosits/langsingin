@@ -4,8 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 Future<void> main() async {
   
   await Supabase.initialize(
-    url: 'https://oeiddelmrzksvmrjgpow.supabase.co',
-    anonKey: 'sb_publishable_A5htoAn1JxWxKnSoZLQFhw_zLaF15w5',
+    url: '-',
+    anonKey: '-',
   );
   runApp(const MyApp());
 }
