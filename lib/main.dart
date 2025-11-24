@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
+  
   await Supabase.initialize(
     url: 'https://oeiddelmrzksvmrjgpow.supabase.co',
-    anonKey: '<prefer publishable key instead of anon key for mobile and desktop apps>',
+    anonKey: 'sb_publishable_A5htoAn1JxWxKnSoZLQFhw_zLaF15w5',
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-// Global accessor untuk Supabase
 final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
@@ -18,15 +18,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'LangsingIn App',
+      title: 'LangsingIn',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFFFE3C7),
         useMaterial3: true,
       ),
-      // Cek apakah user sudah login
-      home: supabase.auth.currentSession != null 
-          ? const HomePage() 
+      home: supabase.auth.currentSession != null
+          ? const HomePage()
           : const LoginPage(),
     );
   }
@@ -57,7 +56,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _handleAuth() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showMessage('Email dan password harus diisi!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email dan password harus diisi!')),
+      );
       return;
     }
 
@@ -65,23 +66,21 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       if (_isSignUp) {
-        // Sign Up
         final response = await supabase.auth.signUp(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-
         if (response.user != null) {
-          _showMessage('Registrasi berhasil! Silakan login.');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registrasi berhasil! Silakan login.')),
+          );
           setState(() => _isSignUp = false);
         }
       } else {
-        // Sign In
         await supabase.auth.signInWithPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const HomePage()),
@@ -89,125 +88,141 @@ class _LoginPageState extends State<LoginPage> {
         }
       }
     } on AuthException catch (e) {
-      _showMessage('Error: ${e.message}');
-    } catch (e) {
-      _showMessage('Error: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  void _showMessage(String message) {
-    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
+        SnackBar(content: Text('Error: ${e.message}')),
       );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isSignUp ? 'Daftar' : 'Login'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo atau Icon
-              Image.asset(
-  'assets/image/logo.png',
-  height: 100,  // sesuaikan ukuran
-),
-              const SizedBox(height: 24),
-              Text(
-                'LangsingIn',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Tracking Kalori & Nutrisi',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
-                    ),
-              ),
-              const SizedBox(height: 48),
-
-              // Email TextField
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-
-              // Password TextField
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: const Icon(Icons.lock),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 24),
-
-              // Login/SignUp Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-  onPressed: _isLoading ? null : _handleAuth,
-  style: ElevatedButton.styleFrom(
-    backgroundColor: const Color(0xFFFF7C36),
-    foregroundColor: Colors.black,
-    disabledBackgroundColor: const Color(0xFFFF7C36).withValues(alpha: 0.5),
-    disabledForegroundColor: Colors.black.withValues(alpha: 0.7),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-    elevation: 2,
-    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-  ),
-  child: _isLoading
-      ? const CircularProgressIndicator()
-      : Text(
-          _isSignUp ? 'Daftar' : 'Login',
-          style: const TextStyle(fontSize: 16),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFFFA726), Color(0xFFFFE3C7)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
         ),
-),
-              ),
-              const SizedBox(height: 16),
-
-              // Toggle Login/SignUp
-              TextButton(
-                onPressed: () {
-                  setState(() => _isSignUp = !_isSignUp);
-                },
-                child: Text(
-                  _isSignUp
-                      ? 'Sudah punya akun? Login'
-                      : 'Belum punya akun? Daftar',
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/image/logo.png',
+                  height: 120,
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Text(
+                  'Selamat Datang',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Tracking Kalori & Nutrisi',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.black54,
+                      ),
+                ),
+                const SizedBox(height: 40),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        _isSignUp ? 'Daftar' : 'Login',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      TextField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email atau nama pengguna',
+                          prefixIcon: const Icon(Icons.email),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Kata sandi',
+                          prefixIcon: const Icon(Icons.lock),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        obscureText: true,
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleAuth,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF7C36),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator()
+                              : Text(
+                                  _isSignUp ? 'Daftar' : 'Masuk',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () {
+                          setState(() => _isSignUp = !_isSignUp);
+                        },
+                        child: Text(
+                          _isSignUp
+                              ? 'Sudah punya akun? Login'
+                              : 'Belum punya akun? Buat disini',
+                          style: const TextStyle(color: Colors.black54),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -216,7 +231,7 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 // ========================================
-// HOME PAGE (After Login)
+// HOME PAGE
 // ========================================
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -243,18 +258,9 @@ class _HomePageState extends State<HomePage> {
           setState(() => _selectedIndex = index);
         },
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.restaurant),
-            label: 'Log Makanan',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          NavigationDestination(icon: Icon(Icons.restaurant), label: 'Log Makanan'),
+          NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -287,7 +293,6 @@ class _DashboardPageState extends State<DashboardPage> {
       if (userId == null) return;
 
       final today = DateTime.now().toIso8601String().split('T')[0];
-      
       final response = await supabase
           .from('laporan_harian')
           .select()
@@ -311,7 +316,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final user = supabase.auth.currentUser;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
@@ -324,38 +329,26 @@ class _DashboardPageState extends State<DashboardPage> {
               child: ListView(
                 padding: const EdgeInsets.all(16.0),
                 children: [
-                  // Welcome Card
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Halo! 👋',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
+                          Text('Halo! 👋',
+                              style: Theme.of(context).textTheme.headlineSmall),
                           const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? 'User',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
+                          Text(user?.email ?? 'User',
+                              style: Theme.of(context).textTheme.bodyMedium),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Laporan Hari Ini
-                  Text(
-                    'Laporan Hari Ini',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
+                  Text('Laporan Hari Ini',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-
-                  // Kalori Masuk
                   _buildStatCard(
                     icon: Icons.restaurant,
                     title: 'Kalori Masuk',
@@ -364,8 +357,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     color: Colors.green,
                   ),
                   const SizedBox(height: 12),
-
-                  // Kalori Keluar
                   _buildStatCard(
                     icon: Icons.directions_run,
                     title: 'Kalori Keluar',
@@ -374,8 +365,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     color: Colors.orange,
                   ),
                   const SizedBox(height: 12),
-
-                  // Selisih
                   _buildStatCard(
                     icon: Icons.analytics,
                     title: 'Selisih Kalori',
@@ -384,44 +373,17 @@ class _DashboardPageState extends State<DashboardPage> {
                     color: Colors.blue,
                   ),
                   const SizedBox(height: 24),
-
-                  // Nutrisi
-                  Text(
-                    'Nutrisi Hari Ini',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
+                  Text('Nutrisi Hari Ini',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
-
                   Row(
                     children: [
-                      Expanded(
-                        child: _buildNutritionCard(
-                          'Karbo',
-                          '${_laporanHarian?['total_karbo'] ?? 0}',
-                          'g',
-                          Colors.amber,
-                        ),
-                      ),
+                      Expanded(child: _buildNutritionCard('Karbo', '${_laporanHarian?['total_karbo'] ?? 0}', 'g', Colors.amber)),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildNutritionCard(
-                          'Protein',
-                          '${_laporanHarian?['total_protein'] ?? 0}',
-                          'g',
-                          Colors.red,
-                        ),
-                      ),
+                      Expanded(child: _buildNutritionCard('Protein', '${_laporanHarian?['total_protein'] ?? 0}', 'g', Colors.red)),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildNutritionCard(
-                          'Lemak',
-                          '${_laporanHarian?['total_lemak'] ?? 0}',
-                          'g',
-                          Colors.purple,
-                        ),
-                      ),
+                      Expanded(child: _buildNutritionCard('Lemak', '${_laporanHarian?['total_lemak'] ?? 0}', 'g', Colors.purple)),
                     ],
                   ),
                 ],
@@ -430,13 +392,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required String unit,
-    required Color color,
-  }) {
+  Widget _buildStatCard({required IconData icon, required String title, required String value, required String unit, required Color color}) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -445,7 +401,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 32),
@@ -455,35 +411,15 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
                   const SizedBox(height: 4),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        value,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 2),
-                        child: Text(
-                          unit,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
+                      Text(unit, style: const TextStyle(fontSize: 14, color: Colors.grey)),
                     ],
                   ),
                 ],
@@ -495,40 +431,16 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildNutritionCard(
-    String label,
-    String value,
-    String unit,
-    Color color,
-  ) {
+  Widget _buildNutritionCard(String label, String value, String unit, Color color) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              unit,
-              style: const TextStyle(
-                fontSize: 10,
-                color: Colors.grey,
-              ),
-            ),
+            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            Text(unit, style: const TextStyle(fontSize: 10, color: Colors.grey)),
           ],
         ),
       ),
@@ -554,7 +466,6 @@ class FoodLogPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Implement add food log
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Fitur tambah makanan coming soon!')),
           );
@@ -592,7 +503,6 @@ class ProfilePage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // Profile Header
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -618,8 +528,6 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Menu Items
           ListTile(
             leading: const Icon(Icons.edit),
             title: const Text('Edit Profile'),
@@ -654,8 +562,6 @@ class ProfilePage extends StatelessWidget {
           ),
           const Divider(),
           const SizedBox(height: 24),
-
-          // Logout Button
           ElevatedButton.icon(
             onPressed: () => _logout(context),
             icon: const Icon(Icons.logout),
