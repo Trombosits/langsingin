@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  #goggle-font
+  google_fonts: ^6.3.2
   # env
   flutter_dotenv: ^5.1.0
   # Supabase
