@@ -30,9 +30,9 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFFFE3C7),
         useMaterial3: true,
       ),
-      home: supabase.auth.currentSession != null
-          ? const HomePage()
-          : const LoginPage(),
+      home: supabase.auth.currentSession != null 
+    ? const HomePage() 
+    : const LoginPage(),
     );
   }
 }
