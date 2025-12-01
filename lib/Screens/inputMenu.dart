@@ -267,8 +267,19 @@ class _FoodLogPageState extends State<FoodLogPage>
       ),
       body: Column(
         children: [
-          /* ----- tombol simpan semua (di atas tab) ----- */
+          /* ----- konten tab ----- */
+          Expanded(
+            child: TabBarView(
+              controller: _tabCtrl,
+              children: [
+                _buildFoodTab(),
+                _buildActivityTab(),
+              ],
+            ),
+          ),
+          /* ----- tombol simpan semua (di bawah) ----- */
           SafeArea(
+            top: false,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: SizedBox(
@@ -288,16 +299,6 @@ class _FoodLogPageState extends State<FoodLogPage>
                       : const Text('Simpan Semua Log'),
                 ),
               ),
-            ),
-          ),
-          /* ----- konten tab ----- */
-          Expanded(
-            child: TabBarView(
-              controller: _tabCtrl,
-              children: [
-                _buildFoodTab(),
-                _buildActivityTab(),
-              ],
             ),
           ),
         ],
