@@ -267,7 +267,16 @@ class _FoodLogPageState extends State<FoodLogPage>
       ),
       body: Column(
         children: [
-          /* ----- tombol simpan semua (di atas tab) ----- */
+          /* ----- konten tab ----- */
+          Expanded(
+            child: TabBarView(
+              controller: _tabCtrl,
+              children: [
+                _buildFoodTab(),
+                _buildActivityTab(),
+              ],
+            ),
+          ),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -290,16 +299,7 @@ class _FoodLogPageState extends State<FoodLogPage>
               ),
             ),
           ),
-          /* ----- konten tab ----- */
-          Expanded(
-            child: TabBarView(
-              controller: _tabCtrl,
-              children: [
-                _buildFoodTab(),
-                _buildActivityTab(),
-              ],
-            ),
-          ),
+          
         ],
       ),
       

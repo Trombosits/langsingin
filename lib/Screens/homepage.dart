@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:langsingin/Screens/dashboard.dart';
-import 'package:langsingin/Screens/foodlog.dart';
+import 'package:langsingin/Screens/inputMenu.dart';
 import 'package:langsingin/Screens/profile.dart';
 import 'package:langsingin/main.dart';
 

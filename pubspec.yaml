@@ -36,6 +36,8 @@ dependencies:
   flutter_dotenv: ^5.1.0
   # Supabase
   supabase_flutter: ^2.3.4
+  # get date n time
+  intl: ^0.20.2
   
   # Local Storage
   shared_preferences: ^2.2.2
