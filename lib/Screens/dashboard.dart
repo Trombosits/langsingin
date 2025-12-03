@@ -21,7 +21,10 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _loadLaporanHarian() async {
     try {
       final userId = supabase.auth.currentUser?.id;
-      if (userId == null) return;
+      if (userId == null) {
+  setState(() => _isLoading = false);   // <- tambahkan ini
+  return;
+}
 
       final today = DateTime.now().toIso8601String().split('T')[0];
       final response = await supabase
@@ -49,10 +52,10 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final user = supabase.auth.currentUser;
 
-    final double kaloriMasuk = _laporanHarian?['total_kalori_in'] ?? 0;
-    final double kaloriKeluar = _laporanHarian?['total_kalori_out'] ?? 0;
-    final double kaloriTarget = 2600;
-    final double sisaKalori = kaloriTarget - kaloriMasuk + kaloriKeluar;
+    final int kaloriMasuk = _laporanHarian?['total_kalori_in'] ?? 0;
+    final int kaloriKeluar = _laporanHarian?['total_kalori_out'] ?? 0;
+    final int kaloriTarget = 2600;
+    final int sisaKalori = kaloriTarget - kaloriMasuk + kaloriKeluar;
 
     return Scaffold(
       appBar: AppBar(
