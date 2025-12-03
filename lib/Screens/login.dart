@@ -115,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
         TextField(
           controller: _emailCtrl,
           decoration: InputDecoration(
-            hintText: 'Email atau nama pengguna',
+            hintText: 'Email',
             hintStyle: GoogleFonts.inter(
               fontStyle: FontStyle.italic,
               color: Colors.white70,

@@ -27,6 +27,7 @@ class _DashboardPageState extends State<DashboardPage> {
       final response = await supabase
           .from('laporan_harian')
           .select()
+          .eq('id_user', userId)
           .eq('tanggal', today)
           .maybeSingle();
 
