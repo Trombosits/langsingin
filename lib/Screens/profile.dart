@@ -45,7 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile', alig),
+        title: const Text('Profile',),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: ListView(

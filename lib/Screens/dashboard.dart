@@ -70,7 +70,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 children: [
                   // Kalori Header
                   Card(
-                    color: sisaKalori > 0 ? Colors.white : Color(0xFFFF7D39),
+                    color: sisaKalori > 0 ? Color(0xFFFF7D39) : Colors.redAccent,
                     elevation: 2,
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -155,6 +155,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ],
                   ),
+                  // Date n time
                 ],
               ),
             ),
