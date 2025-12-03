@@ -252,59 +252,45 @@ class _FoodLogPageState extends State<FoodLogPage>
      UI
   ================================================= */
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Log Makanan & Olahraga'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        bottom: TabBar(
-          controller: _tabCtrl,
-          tabs: const [
-            Tab(icon: Icon(Icons.restaurant), text: 'Makanan'),
-            Tab(icon: Icon(Icons.directions_run), text: 'Olahraga'),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          /* ----- konten tab ----- */
-          Expanded(
-            child: TabBarView(
-              controller: _tabCtrl,
-              children: [
-                _buildFoodTab(),
-                _buildActivityTab(),
-              ],
-            ),
-          ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _loadingFood ? null : _saveAll,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF7C36),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: Column(
+      children: [
+        /* ---------- MAKANAN (ATAS) ---------- */
+        Expanded(child: _buildFoodTab()),
+
+        const Divider(thickness: 2),
+
+        /* ---------- AKTIVITAS (BAWAH) ---------- */
+        Expanded(child: _buildActivityTab()),
+
+        /* ---------- TOMBOL SIMPAN ---------- */
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _loadingFood ? null : _saveAll,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF7C36),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: _loadingFood
-                      ? const CircularProgressIndicator()
-                      : const Text('Simpan Semua Log'),
                 ),
+                child: _loadingFood
+                    ? const CircularProgressIndicator()
+                    : const Text('Simpan Semua Log'),
               ),
             ),
           ),
-          
-        ],
-      ),
-      
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   /* -------------------------------------------------
      WIDGET TAB MAKANAN
@@ -319,6 +305,7 @@ class _FoodLogPageState extends State<FoodLogPage>
             children: [
               Expanded(
                 child: TextField(
+
                   controller: _foodSearchCtrl,
                   decoration: InputDecoration(
                     labelText: 'Cari makanan',
@@ -339,7 +326,7 @@ class _FoodLogPageState extends State<FoodLogPage>
         else if (_foodList.isNotEmpty)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(border: Border.all(color: Colors.black), borderRadius: BorderRadius.circular(12), color: Color(0XFFFFF2E3)),
             height: 150,
             child: Scrollbar(
               child: ListView.builder(
@@ -442,7 +429,7 @@ class _FoodLogPageState extends State<FoodLogPage>
         else if (_activityList.isNotEmpty)
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(border: Border.all(color: Colors.black), borderRadius: BorderRadius.circular(12), color:Color(0XFFFFF2E3)),
             height: 150,
             child: Scrollbar(
               child: ListView.builder(

@@ -223,11 +223,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFA726), Color(0xFFFFE3C7)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+          color: Color(0XFFEBD1B7)
         ),
         child: SafeArea(
           child: Center(
@@ -235,32 +231,7 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  ClipOval(
-                    child: Image.asset(
-                      'assets/image/logo.png',
-                      height: 120,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.restaurant, size: 60),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Selamat Datang',
-                    style: GoogleFonts.poppins(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tracking Kalori & Nutrisi',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.black54),
-                  ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   _buildProgressIndicator(),
                   const SizedBox(height: 24),
                   _buildStepContent(),
@@ -342,16 +313,16 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildNameStep() {
     return _cardForm([
       const Text('Apa nama depanmu?',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ), textAlign: TextAlign.center,),
       const SizedBox(height: 16),
       TextField(
         controller: _firstNameCtrl,
         decoration: InputDecoration(
           labelText: 'Nama depan',
-          prefixIcon: const Icon(Icons.person),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
           filled: true,
-          fillColor: Colors.grey[50],
+          fillColor: Colors.black,
+          labelStyle: TextStyle(color: Color(0XFFA8A8A8) )
         ),
       ),
     ]);
@@ -564,13 +535,6 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _cardForm(List<Widget> children) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: children,

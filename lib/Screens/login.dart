@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:langsingin/Screens/auth_service.dart';
-import 'package:langsingin/Screens/homepage.dart';
+import 'package:langsingin/Screens/navbar.dart';
 import 'package:langsingin/Screens/register.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Container(
         // <CHANGE> Changed from gradient to solid beige background
-        color: const Color(0xFFE8D7C3),
+        color: const Color(0xFFEBD1B7),
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: ClipOval(
                       child: Image.asset(
                         'assets/image/logo.png',
-                        height: 100,
+                        height: 140,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -88,16 +88,17 @@ class _LoginPageState extends State<LoginPage> {
                     fontSize: 32,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 128),
                 // <CHANGE> Added subtitle "Silakan Masuk."
                 Text(
                   'Silakan Masuk.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.black54,
+                        color: Colors.black,
                         fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 _cardForm(),
               ],
             ),
@@ -164,8 +165,38 @@ class _LoginPageState extends State<LoginPage> {
           ),
           obscureText: true,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 128),
         // <CHANGE> Increased button width and adjusted styling
+
+Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Belum punya akun? ',
+              style: GoogleFonts.inter(
+                color: Colors.black,
+                fontSize: 14,
+              ),
+            ),
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RegisterPage()),
+              ),
+              child: Text(
+                'Buat disini',
+                style: GoogleFonts.inter(
+                  color: Colors.blue,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline, decorationColor: Colors.blue,                 
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
           height: 50,
@@ -191,32 +222,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
         const SizedBox(height: 20),
         // <CHANGE> Updated register link with blue "Buat disini" text
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Belum punya akun? ',
-              style: GoogleFonts.inter(
-                color: Colors.black54,
-                fontSize: 14,
-              ),
-            ),
-            GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const RegisterPage()),
-              ),
-              child: Text(
-                'Buat disini',
-                style: GoogleFonts.inter(
-                  color: Colors.blue,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+        
       ],
     );
   }
