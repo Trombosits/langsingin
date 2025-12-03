@@ -49,10 +49,10 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final user = supabase.auth.currentUser;
 
-    final int kaloriMasuk = _laporanHarian?['total_kalori_in'] ?? 0;
-    final int kaloriKeluar = _laporanHarian?['total_kalori_out'] ?? 0;
-    final int kaloriTarget = 2600;
-    final int sisaKalori = kaloriTarget - kaloriMasuk + kaloriKeluar;
+    final double kaloriMasuk = _laporanHarian?['total_kalori_in'] ?? 0;
+    final double kaloriKeluar = _laporanHarian?['total_kalori_out'] ?? 0;
+    final double kaloriTarget = 2600;
+    final double sisaKalori = kaloriTarget - kaloriMasuk + kaloriKeluar;
 
     return Scaffold(
       appBar: AppBar(
