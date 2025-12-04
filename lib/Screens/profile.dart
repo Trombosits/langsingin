@@ -42,12 +42,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
       return Text(days[index], style: style);
     }
-
+    const SizedBox(height: 16);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile',),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [

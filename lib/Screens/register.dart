@@ -15,7 +15,7 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // Controllers
+  /* ---------- CONTROLLERS ---------- */
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _usernameCtrl = TextEditingController();
@@ -25,14 +25,14 @@ class _RegisterPageState extends State<RegisterPage> {
   final _bodyFatCtrl = TextEditingController();
   final _birthDateCtrl = TextEditingController();
 
-  // State
+  /* ---------- STATE ---------- */
   String? _selectedGender;
   String? _activityLevel;
   int _currentStep = 0;
   bool _loading = false;
   DateTime? _selectedDate;
 
-  // Calculated values
+  /* ---------- CALCULATED ---------- */
   double _bmi = 0;
   double _bmr = 0;
   double _tdee = 0;
@@ -40,6 +40,9 @@ class _RegisterPageState extends State<RegisterPage> {
   int _surplus = 0;
   int _deficit = 0;
   int _age = 0;
+
+  /* ---------- NAMA DEPAN UNTUK STEP 1 ---------- */
+  String _namaDepan = '';
 
   @override
   void dispose() {
@@ -54,8 +57,10 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  /* ---------- NAVIGASI STEP ---------- */
   void _nextStep() {
     if (!_validateCurrentStep()) return;
+    if (_currentStep == 0) _namaDepan = _firstNameCtrl.text.trim(); // SIMPAN NAMA
     if (_currentStep < 6) {
       setState(() => _currentStep++);
       if (_currentStep == 5) _calculateCalories();
@@ -63,9 +68,18 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _prevStep() {
-    if (_currentStep > 0) setState(() => _currentStep--);
+  if (_currentStep > 0) {
+    setState(() => _currentStep--);
+  } else {
+    // step-0 → baru ke login
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+    );
   }
+}
 
+  /* ---------- VALIDASI PER STEP ---------- */
   bool _validateCurrentStep() {
     String? error;
     switch (_currentStep) {
@@ -107,6 +121,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return true;
   }
 
+  /* ---------- HITUNG KALORI ---------- */
   void _calculateCalories() {
     final w = double.tryParse(_weightCtrl.text) ?? 0;
     final h = double.tryParse(_heightCtrl.text) ?? 0;
@@ -138,6 +153,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _deficit = _maintenance - 300;
   }
 
+  /* ---------- PILIH TANGGAL ---------- */
   Future<void> _selectDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -154,7 +170,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  /// ➜ MAPPING LEVEL AKTIVITAS KE NILAI DB
+  /* ---------- MAPPING AKTIVITAS ---------- */
   String _toDbActivity(String? val) {
     switch (val) {
       case 'Rendah':
@@ -172,6 +188,7 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  /* ---------- REGISTRASI ---------- */
   Future<void> _register() async {
     if (!_validateCurrentStep()) return;
     setState(() => _loading = true);
@@ -189,7 +206,7 @@ class _RegisterPageState extends State<RegisterPage> {
         'tinggi': double.tryParse(_heightCtrl.text),
         'usia': _age,
         'jenis_kelamin': _selectedGender,
-        'level_aktivitas': _toDbActivity(_activityLevel), // ← mapping
+        'level_aktivitas': _toDbActivity(_activityLevel),
         'bmi': _bmi,
         'bmr': _bmr,
         'tdee': _tdee,
@@ -218,13 +235,22 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  /* ---------- UI ---------- */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // biar gradasi tetap penuh
+  appBar: AppBar(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    automaticallyImplyLeading: false, // tidak perlu tombol back otomatis
+    leading: IconButton(
+      icon: const Icon(Icons.arrow_back, color: Colors.black),
+      onPressed: _prevStep,
+    ),
+  ),
       body: Container(
-        decoration: const BoxDecoration(
-          color: Color(0XFFEBD1B7)
-        ),
+        decoration: const BoxDecoration(color: Color(0XFFEBD1B7)),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -237,13 +263,10 @@ class _RegisterPageState extends State<RegisterPage> {
                   _buildStepContent(),
                   const SizedBox(height: 20),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (_currentStep > 0)
-                        TextButton(
-                          onPressed: _prevStep,
-                          child: const Text('Kembali'),
-                        )
+                        TextButton(onPressed: _prevStep, child: const Text('Kembali'))
                       else
                         const SizedBox.shrink(),
                       ElevatedButton(
@@ -256,13 +279,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ],
                   ),
-                  TextButton(
-                    onPressed: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                    ),
-                    child: const Text('Sudah punya akun? Login'),
-                  ),
                 ],
               ),
             ),
@@ -272,6 +288,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
+  /* ---------- WIDGET BANTU ---------- */
   Widget _buildProgressIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -313,33 +330,38 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildNameStep() {
     return _cardForm([
       const Text('Apa nama depanmu?',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, ), textAlign: TextAlign.center,),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center),
       const SizedBox(height: 16),
       TextField(
-        controller: _firstNameCtrl,
-        decoration: InputDecoration(
-          labelText: 'Nama depan',
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-          filled: true,
-          fillColor: Colors.black,
-          labelStyle: TextStyle(color: Color(0XFFA8A8A8) )
-        ),
-      ),
+  controller: _firstNameCtrl,
+  style: const TextStyle(color: Color(0XFFA8A8A8)),          // <- teks putih
+  cursorColor: Colors.white,                            // <- cursor putih
+  decoration: InputDecoration(
+    labelText: 'Nama depan',
+    labelStyle: const TextStyle(color: Color(0XFFA8A8A8)), // label abu2
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+    filled: true,
+    fillColor: Colors.black,                            // background hitam
+  ),
+)
     ]);
   }
 
   Widget _buildRDIInfoStep() {
     return _cardForm([
-      const Icon(Icons.info_outline, size: 60, color: Colors.orange),
       const SizedBox(height: 16),
-      const Text('Kita hitung dulu RDI-mu ya.',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center),
+      Text(
+        'Oke $_namaDepan. Kita hitung dulu RDI-mu ya', // << NAMA TERPAKAI
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
+      ),
       const SizedBox(height: 16),
       const Text(
-          'RDI adalah singkatan dari Recommended Daily Intake atau Asupan Harian yang Direkomendasikan.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.black54)),
+        'RDI adalah singkatan dari Recommended Daily Intake atau Asupan Harian yang Direkomendasikan. Ini adalah jumlah rata-rata asupan nutrisi harian yang cukup untuk memenuhi kebutuhan hampir semua individu sehat dalam kelompok usia dan jenis kelamin tertentu, dan biasanya digunakan sebagai panduan gizi.',
+        textAlign: TextAlign.justify,
+        style: TextStyle(color: Colors.black54),
+      ),
     ]);
   }
 
