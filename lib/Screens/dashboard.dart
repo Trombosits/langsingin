@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:langsingin/main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -9,40 +9,75 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  final supabase = Supabase.instance.client;
+
   Map<String, dynamic>? _laporanHarian;
   bool _isLoading = true;
+
+  double _kaloriTarget = 0;
+  String _targetMode = '';
 
   @override
   void initState() {
     super.initState();
-    _loadLaporanHarian();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await Future.wait([_loadUserTarget(), _loadLaporanHarian()]);
+  }
+
+  Future<void> _loadUserTarget() async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final res = await supabase
+          .from('users')
+          .select('tdee, target_mode, target_kalori')
+          .eq('id_user', userId)
+          .single();
+
+      if (mounted) {
+        setState(() {
+          _kaloriTarget = (res['target_kalori'] as num?)?.toDouble() ??
+              ((res['tdee'] as num?)?.toDouble() ?? 0);
+          _targetMode = res['target_mode'] ?? 'maintenance';
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _loadLaporanHarian() async {
     try {
       final userId = supabase.auth.currentUser?.id;
       if (userId == null) {
-  setState(() => _isLoading = false);
-  return;
-}
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
 
       final today = DateTime.now().toIso8601String().split('T')[0];
-      final response = await supabase
+      final res = await supabase
           .from('laporan_harian')
           .select()
           .eq('id_user', userId)
           .eq('tanggal', today)
-          .maybeSingle();
+          .maybeSingle()
+          .timeout(const Duration(seconds: 10));
 
-      setState(() {
-        _laporanHarian = response;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
       if (mounted) {
+        setState(() {
+          _laporanHarian = res;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Gagal memuat data: $e')),
         );
       }
     }
@@ -50,27 +85,22 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = supabase.auth.currentUser;
-
-    final double kaloriMasuk = double.tryParse('${_laporanHarian?['total_kalori_in'] ?? 0}')??0;
-    final double kaloriKeluar = double.tryParse("${_laporanHarian?['total_kalori_out'] ?? 0}")??0;
-    final double kaloriTarget = 2600;
-     double sisaKalori = double.tryParse('${kaloriTarget - kaloriMasuk}')??0;
-    if (sisaKalori <= 0) {
-      sisaKalori = 0;
-    }
+    final kaloriMasuk =
+        (_laporanHarian?['total_kalori_in'] as num?)?.toDouble() ?? 0;
+    final kaloriKeluar =
+        (_laporanHarian?['total_kalori_out'] as num?)?.toDouble() ?? 0;
+    final sisaKalori = (_kaloriTarget - kaloriMasuk).clamp(0, double.infinity);
 
     return Scaffold(
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _loadLaporanHarian,
+              onRefresh: _initializeData,
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // Kalori Header
                   Card(
-                    color: sisaKalori > 0 ? Color(0xFFFF7D39) : Colors.redAccent,
+                    color: sisaKalori >= 0 ? const Color(0xFFFF7D39) : Colors.redAccent,
                     elevation: 2,
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -80,13 +110,17 @@ class _DashboardPageState extends State<DashboardPage> {
                           const Text(
                             'Monitor Kalori',
                             style: TextStyle(
-                                fontSize: 18, color: Colors.white ,fontWeight: FontWeight.bold),
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '$kaloriMasuk' "/" '$kaloriTarget',
+                            '$kaloriMasuk / $_kaloriTarget',
                             style: const TextStyle(
-                                fontSize: 24,color : Colors.white, fontWeight: FontWeight.bold),
+                                fontSize: 24,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 10),
                           Text(
@@ -95,10 +129,8 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                           const SizedBox(height: 12),
                           LinearProgressIndicator(
-                            value: kaloriMasuk / kaloriTarget > 1
-                                ? 1
-                                : kaloriMasuk / kaloriTarget,
-                            backgroundColor: Color(0XFFFFCC9F),
+                            value: (kaloriMasuk / _kaloriTarget).clamp(0, 1),
+                            backgroundColor: const Color(0XFFFFCC9F),
                             color: Colors.green,
                           ),
                         ],
@@ -106,8 +138,6 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Kalori Masuk & Keluar
                   Row(
                     children: [
                       Expanded(
@@ -130,32 +160,35 @@ class _DashboardPageState extends State<DashboardPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // Makronutrien
                   const Text(
                     'Makronutrien',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
-                        child: _buildNutriCard('Protein',
-                            '${_laporanHarian?['total_protein'] ?? 0}g', Colors.black),
+                        child: _buildNutriCard(
+                            'Protein',
+                            '${_laporanHarian?['total_protein'] ?? 0}g',
+                            Colors.black),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _buildNutriCard('Karbo',
-                            '${_laporanHarian?['total_karbo'] ?? 0}g', Colors.black),
+                        child: _buildNutriCard(
+                            'Karbo',
+                            '${_laporanHarian?['total_karbo'] ?? 0}g',
+                            Colors.black),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _buildNutriCard('Lemak',
-                            '${_laporanHarian?['total_lemak'] ?? 0}g', Colors.black),
+                        child: _buildNutriCard(
+                            'Lemak',
+                            '${_laporanHarian?['total_lemak'] ?? 0}g',
+                            Colors.black),
                       ),
                     ],
                   ),
-                  // Date n time
                 ],
               ),
             ),
@@ -191,7 +224,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildNutriCard(String label, String value, Color color) {
     return Card(
-      color: Color(0xFFFFDDDD),
+      color: const Color(0xFFFFDDDD),
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(12),

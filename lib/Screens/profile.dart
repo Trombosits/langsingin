@@ -42,7 +42,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
       return Text(days[index], style: style);
     }
-    const SizedBox(height: 16);
     return Scaffold(
       
       body: ListView(
