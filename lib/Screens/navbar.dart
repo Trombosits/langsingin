@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
         },
         destinations: const [
           NavigationDestination(icon: Icon(Icons.dashboard), label: 'Dashboard'),
-          NavigationDestination(icon: Icon(Icons.restaurant), label: 'Log Makanan'),
+          NavigationDestination(icon: Icon(Icons.book), label: 'Diary'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

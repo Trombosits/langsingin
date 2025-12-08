@@ -15,7 +15,7 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isLoading = true;
 
   double _kaloriTarget = 0;
-  String _targetMode = '';
+  
 
   @override
   void initState() {
@@ -42,7 +42,6 @@ class _DashboardPageState extends State<DashboardPage> {
         setState(() {
           _kaloriTarget = (res['target_kalori'] as num?)?.toDouble() ??
               ((res['tdee'] as num?)?.toDouble() ?? 0);
-          _targetMode = res['target_mode'] ?? 'maintenance';
         });
       }
     } catch (_) {
@@ -159,10 +158,11 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 150),
                   const Text(
                     'Makronutrien',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
                   Row(

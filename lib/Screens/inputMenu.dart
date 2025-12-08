@@ -48,17 +48,17 @@ class FoodLogPage extends StatefulWidget {
 }
 
 class _FoodLogPageState extends State<FoodLogPage>
-    with TickerProviderStateMixin {
-  /* ----- tab controller ----- */
+    with SingleTickerProviderStateMixin {
+  /* ---------- TAB ---------- */
   late TabController _tabCtrl;
 
-  /* ----- makanan ----- */
+  /* ---------- MAKANAN ---------- */
   final _foodSearchCtrl = TextEditingController();
   final _foodItems = <FoodItem>[];
   List<dynamic> _foodList = [];
   bool _loadingFood = false;
 
-  /* ----- olahraga ----- */
+  /* ---------- AKTIVITAS ---------- */
   final _activitySearchCtrl = TextEditingController();
   final _activityItems = <ActivityItem>[];
   List<dynamic> _activityList = [];
@@ -102,9 +102,7 @@ class _FoodLogPageState extends State<FoodLogPage>
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _loadingFood = false);
     }
@@ -124,7 +122,7 @@ class _FoodLogPageState extends State<FoodLogPage>
   void _removeFood(int index) => setState(() => _foodItems.removeAt(index));
 
   /* =================================================
-     OLAHRAGA FUNCTIONS
+     AKTIVITAS FUNCTIONS
   ================================================= */
   Future<void> _searchActivity() async {
     final keyword = _activitySearchCtrl.text.trim();
@@ -145,9 +143,7 @@ class _FoodLogPageState extends State<FoodLogPage>
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       if (mounted) setState(() => _loadingAct = false);
     }
@@ -164,8 +160,7 @@ class _FoodLogPageState extends State<FoodLogPage>
     });
   }
 
-  void _removeActivity(int index) =>
-      setState(() => _activityItems.removeAt(index));
+  void _removeActivity(int index) => setState(() => _activityItems.removeAt(index));
 
   /* =================================================
      SIMPAN SEMUA (BATCH INSERT)
@@ -178,7 +173,6 @@ class _FoodLogPageState extends State<FoodLogPage>
       return;
     }
 
-    /* validasi cepat */
     for (var it in _foodItems) {
       if (it.gram <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -196,11 +190,10 @@ class _FoodLogPageState extends State<FoodLogPage>
       }
     }
 
-    setState(() => _loadingFood = true); // reuse flag
+    setState(() => _loadingFood = true);
     try {
       final userId = supabase.auth.currentUser!.id;
 
-      /* ---------- insert makanan ---------- */
       if (_foodItems.isNotEmpty) {
         final foodBatch = _foodItems.map((it) => {
           'id_user': userId,
@@ -211,7 +204,6 @@ class _FoodLogPageState extends State<FoodLogPage>
         await supabase.from('log_makanan').insert(foodBatch);
       }
 
-      /* ---------- insert aktivitas ---------- */
       if (_activityItems.isNotEmpty) {
         final actBatch = _activityItems.map((it) => {
           'id_user': userId,
@@ -229,9 +221,7 @@ class _FoodLogPageState extends State<FoodLogPage>
       _reset();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
     } finally {
       if (mounted) setState(() => _loadingFood = false);
     }
@@ -249,63 +239,81 @@ class _FoodLogPageState extends State<FoodLogPage>
   }
 
   /* =================================================
-     UI
+     UI – TAB BAR
   ================================================= */
   @override
 Widget build(BuildContext context) {
-  return Scaffold(
-    body: Column(
-      children: [
-        /* ---------- MAKANAN (ATAS) ---------- */
-        Expanded(child: _buildFoodTab()),
-
-        const Divider(thickness: 2),
-
-        /* ---------- AKTIVITAS (BAWAH) ---------- */
-        Expanded(child: _buildActivityTab()),
-
-        /* ---------- TOMBOL SIMPAN ---------- */
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _loadingFood ? null : _saveAll,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF7C36),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+  return GestureDetector(
+    onTap: () {
+      FocusScope.of(context).unfocus();
+      if (mounted) {
+        setState(() {
+          _foodList.clear();
+          _activityList.clear();
+        });
+      }
+    },
+    child: Scaffold(
+      backgroundColor: const Color(0XFFEBD1B7), // <- samakan dengan background
+      appBar: AppBar(
+        automaticallyImplyLeading: false, // <- hilangkan tombol back
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        bottom: TabBar(
+          controller: _tabCtrl,
+          labelColor: const Color(0xffff7c36),
+          indicatorColor: const Color(0xffff7c36),
+          tabs: const [
+            Tab(text: 'Makanan', icon: Icon(Icons.restaurant)),
+            Tab(text: 'Aktivitas', icon: Icon(Icons.directions_run)),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabCtrl,
+        children: [
+          _buildFoodTab(),
+          _buildActivityTab(),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _loadingFood ? null : _saveAll,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xffff7c36),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: _loadingFood
-                    ? const CircularProgressIndicator()
-                    : const Text('Simpan Semua Log'),
               ),
+              child: _loadingFood
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Simpan'),
             ),
           ),
         ),
-      ],
+      ),
     ),
   );
 }
-
-  /* -------------------------------------------------
-     WIDGET TAB MAKANAN
-  ------------------------------------------------- */
+  /* =================================================
+     TAB MAKANAN
+  ================================================= */
   Widget _buildFoodTab() {
-    return Column(
-      children: [
-        /* pencarian */
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+    return Scrollbar(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          /* pencarian */
+          Row(
             children: [
               Expanded(
                 child: TextField(
-
                   controller: _foodSearchCtrl,
                   decoration: InputDecoration(
                     labelText: 'Cari makanan',
@@ -319,93 +327,103 @@ Widget build(BuildContext context) {
               IconButton(onPressed: _searchFood, icon: const Icon(Icons.search, size: 32)),
             ],
           ),
-        ),
-        /* hasil pencarian */
-        if (_loadingFood)
-          const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())
-        else if (_foodList.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(border: Border.all(color: Colors.black), borderRadius: BorderRadius.circular(12), color: Color(0XFFFFF2E3)),
-            height: 150,
-            child: Scrollbar(
-              child: ListView.builder(
-                itemCount: _foodList.length,
-                itemBuilder: (_, i) {
-                  final m = _foodList[i];
-                  return ListTile(
-                    leading: const Icon(Icons.add_circle_outline),
-                    title: Text(m['nama_makanan']),
-                    onTap: () => _addFood(m['id_makanan'], m['nama_makanan']),
-                  );
-                },
+          const SizedBox(height: 12),
+
+          /* hasil pencarian */
+          if (_loadingFood)
+            const Center(child: CircularProgressIndicator())
+          else if (_foodList.isNotEmpty)
+            Container(
+              height: 150,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0XFFFFF2E3),
               ),
-            ),
-          ),
-        /* daftar item */
-        Expanded(
-          child: _foodItems.isEmpty
-              ? const Center(child: Text('Belum ada makanan'))
-              : ListView.builder(
-                  itemCount: _foodItems.length,
+              child: Scrollbar(
+                child: ListView.builder(
+                  itemCount: _foodList.length,
                   itemBuilder: (_, i) {
-                    final it = _foodItems[i];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            Expanded(flex: 3, child: Text(it.namaMakanan, style: const TextStyle(fontWeight: FontWeight.w500))),
-                            Expanded(
-                              flex: 2,
-                              child: TextField(
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(labelText: 'Gram', border: OutlineInputBorder()),
-                                onChanged: (v) => it.gram = int.tryParse(v) ?? 0,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              flex: 2,
-                              child: InkWell(
-                                onTap: () async {
-                                  final pick = await showDatePicker(
-                                    context: context,
-                                    initialDate: it.tanggal,
-                                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                                    lastDate: DateTime.now(),
-                                  );
-                                  if (pick != null) setState(() => it.tanggal = pick);
-                                },
-                                child: InputDecorator(
-                                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                                  child: Text('${it.tanggal.day}/${it.tanggal.month}/${it.tanggal.year}'),
-                                ),
-                              ),
-                            ),
-                            IconButton(onPressed: () => _removeFood(i), icon: const Icon(Icons.delete, color: Colors.red)),
-                          ],
-                        ),
-                      ),
+                    final m = _foodList[i];
+                    return ListTile(
+                      leading: const Icon(Icons.add_circle_outline),
+                      title: Text(m['nama_makanan']),
+                      onTap: () {
+                        _addFood(m['id_makanan'], m['nama_makanan']);
+                        setState(() => _foodList.clear());
+                      },
                     );
                   },
                 ),
-        ),
-      ],
+              ),
+            ),
+
+          /* daftar item */
+          if (_foodItems.isEmpty && _foodList.isEmpty)
+            const Center(child: Text('Belum ada makanan'))
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemCount: _foodItems.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (_, i) {
+                final it = _foodItems[i];
+                return Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Expanded(flex: 3, child: Text(it.namaMakanan, style: const TextStyle(fontWeight: FontWeight.w500))),
+                        Expanded(
+                          flex: 2,
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'Gram', border: OutlineInputBorder()),
+                            onChanged: (v) => it.gram = int.tryParse(v) ?? 0,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            onTap: () async {
+                              final pick = await showDatePicker(
+                                context: context,
+                                initialDate: it.tanggal,
+                                firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                                lastDate: DateTime.now(),
+                              );
+                              if (pick != null) setState(() => it.tanggal = pick);
+                            },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(border: OutlineInputBorder()),
+                              child: Text('${it.tanggal.day}/${it.tanggal.month}/${it.tanggal.year}'),
+                            ),
+                          ),
+                        ),
+                        IconButton(onPressed: () => _removeFood(i), icon: const Icon(Icons.delete, color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 
-  /* -------------------------------------------------
-     WIDGET TAB OLAHRAGA
-  ------------------------------------------------- */
+  /* =================================================
+     TAB AKTIVITAS
+  ================================================= */
   Widget _buildActivityTab() {
-    return Column(
-      children: [
-        /* pencarian */
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+    return Scrollbar(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
             children: [
               Expanded(
                 child: TextField(
@@ -422,80 +440,89 @@ Widget build(BuildContext context) {
               IconButton(onPressed: _searchActivity, icon: const Icon(Icons.search, size: 32)),
             ],
           ),
-        ),
-        /* hasil pencarian */
-        if (_loadingAct)
-          const Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator())
-        else if (_activityList.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(border: Border.all(color: Colors.black), borderRadius: BorderRadius.circular(12), color:Color(0XFFFFF2E3)),
-            height: 150,
-            child: Scrollbar(
-              child: ListView.builder(
-                itemCount: _activityList.length,
-                itemBuilder: (_, i) {
-                  final a = _activityList[i];
-                  return ListTile(
-                    leading: const Icon(Icons.add_circle_outline),
-                    title: Text(a['nama_aktivitas']),
-                    onTap: () => _addActivity(a['id_aktivitas'], a['nama_aktivitas']),
-                  );
-                },
+          const SizedBox(height: 12),
+
+          if (_loadingAct)
+            const Center(child: CircularProgressIndicator())
+          else if (_activityList.isNotEmpty)
+            Container(
+              height: 150,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(12),
+                color: const Color(0XFFFFF2E3),
               ),
-            ),
-          ),
-        /* daftar item */
-        Expanded(
-          child: _activityItems.isEmpty
-              ? const Center(child: Text('Belum ada aktivitas'))
-              : ListView.builder(
-                  itemCount: _activityItems.length,
+              child: Scrollbar(
+                child: ListView.builder(
+                  itemCount: _activityList.length,
                   itemBuilder: (_, i) {
-                    final it = _activityItems[i];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            Expanded(flex: 3, child: Text(it.namaAktivitas, style: const TextStyle(fontWeight: FontWeight.w500))),
-                            Expanded(
-                              flex: 2,
-                              child: TextField(
-                                keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(labelText: 'Menit', border: OutlineInputBorder()),
-                                onChanged: (v) => it.menit = int.tryParse(v) ?? 0,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              flex: 2,
-                              child: InkWell(
-                                onTap: () async {
-                                  final pick = await showDatePicker(
-                                    context: context,
-                                    initialDate: it.tanggal,
-                                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                                    lastDate: DateTime.now(),
-                                  );
-                                  if (pick != null) setState(() => it.tanggal = pick);
-                                },
-                                child: InputDecorator(
-                                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                                  child: Text('${it.tanggal.day}/${it.tanggal.month}/${it.tanggal.year}'),
-                                ),
-                              ),
-                            ),
-                            IconButton(onPressed: () => _removeActivity(i), icon: const Icon(Icons.delete, color: Colors.red)),
-                          ],
-                        ),
-                      ),
+                    final a = _activityList[i];
+                    return ListTile(
+                      leading: const Icon(Icons.add_circle_outline),
+                      title: Text(a['nama_aktivitas']),
+                      onTap: () {
+                        _addActivity(a['id_aktivitas'], a['nama_aktivitas']);
+                        setState(() => _activityList.clear());
+                      },
                     );
                   },
                 ),
-        ),
-      ],
+              ),
+            ),
+
+          if (_activityItems.isEmpty && _activityList.isEmpty)
+            const Center(child: Text('Belum ada aktivitas'))
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemCount: _activityItems.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (_, i) {
+                final it = _activityItems[i];
+                return Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Expanded(flex: 3, child: Text(it.namaAktivitas, style: const TextStyle(fontWeight: FontWeight.w500))),
+                        Expanded(
+                          flex: 2,
+                          child: TextField(
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'Menit', border: OutlineInputBorder()),
+                            onChanged: (v) => it.menit = int.tryParse(v) ?? 0,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 2,
+                          child: InkWell(
+                            onTap: () async {
+                              final pick = await showDatePicker(
+                                context: context,
+                                initialDate: it.tanggal,
+                                firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                                lastDate: DateTime.now(),
+                              );
+                              if (pick != null) setState(() => it.tanggal = pick);
+                            },
+                            child: InputDecorator(
+                              decoration: const InputDecoration(border: OutlineInputBorder()),
+                              child: Text('${it.tanggal.day}/${it.tanggal.month}/${it.tanggal.year}'),
+                            ),
+                          ),
+                        ),
+                        IconButton(onPressed: () => _removeActivity(i), icon: const Icon(Icons.delete, color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 }

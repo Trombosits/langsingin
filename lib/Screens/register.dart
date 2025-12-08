@@ -21,7 +21,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final _firstNameCtrl = TextEditingController();
   final _heightCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
-  final _bodyFatCtrl = TextEditingController();
   final _birthDateCtrl = TextEditingController();
 
   /* ---------- STATE ---------- */
@@ -52,7 +51,6 @@ class _RegisterPageState extends State<RegisterPage> {
     _firstNameCtrl.dispose();
     _heightCtrl.dispose();
     _weightCtrl.dispose();
-    _bodyFatCtrl.dispose();
     _birthDateCtrl.dispose();
     super.dispose();
   }
@@ -420,18 +418,7 @@ class _RegisterPageState extends State<RegisterPage> {
         controller: _weightCtrl,
         keyboard: TextInputType.number,
       ),
-      const SizedBox(height: 16),
-      const Text(
-        'Lemak Tubuh? (Opsional)',
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      const SizedBox(height: 8),
-      _blackBoxField(
-        label: 'Lemak tubuh (%) - opsional',
-        icon: Icons.percent,
-        controller: _bodyFatCtrl,
-        keyboard: TextInputType.number,
-      ),
+      const SizedBox(height: 24),
     ]);
   }
 
