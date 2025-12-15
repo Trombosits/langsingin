@@ -4,6 +4,7 @@ import 'package:langsingin/Screens/auth_service.dart';
 import 'package:langsingin/Screens/navbar.dart';
 import 'package:langsingin/Screens/register.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:langsingin/Utility/performance.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -32,19 +33,27 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    
+final perf = Performance('Login'); // <- mulai hitung waktu
     setState(() => _loading = true);
+
     try {
       final res = await AuthService.login(_emailCtrl.text, _passCtrl.text);
+      perf.lap('AuthService.login'); // <- setelah API selesai
+
       if (res?.user != null && mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomePage()),
         );
+        perf.lap('navigate'); // <- setelah navigasi
       }
     } on AuthException catch (e) {
+      perf.lap('error'); // <- catat jika error
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _loading = false);
+      perf.finish(); // <- cetak total waktu
     }
   }
 

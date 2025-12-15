@@ -24,7 +24,7 @@ android {
         applicationId = "com.example.langsingin"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 21 // API 21 --> Android 5.0 (Lollipop)
         targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName

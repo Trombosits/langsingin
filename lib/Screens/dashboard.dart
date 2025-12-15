@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:langsingin/Utility/performance.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});

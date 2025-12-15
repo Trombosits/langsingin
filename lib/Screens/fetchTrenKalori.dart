@@ -16,7 +16,7 @@ class TrenKaloriRepository {
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1)); // Senin
     final endOfWeek = startOfWeek.add(const Duration(days: 6));       // Minggu
 
-    // Format tanggal ke yyyy-MM-dd (supaya cocok dengan kolom "date" di Postgres)
+    // Format tanggal ke year-Month-day (supaya cocok dengan kolom "date" di Postgres)
     String toDateString(DateTime d) => d.toIso8601String().substring(0, 10);
 
     final data = await _supabase

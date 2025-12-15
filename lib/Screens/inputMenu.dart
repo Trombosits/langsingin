@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:langsingin/Utility/performance.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -86,27 +87,34 @@ class _FoodLogPageState extends State<FoodLogPage>
   Future<void> _searchFood() async {
     final keyword = _foodSearchCtrl.text.trim();
     if (keyword.isEmpty) return;
-    setState(() => _loadingFood = true);
-    try {
-      final res = await supabase
-          .from('makanan')
-          .select('id_makanan, nama_makanan')
-          .ilike('nama_makanan', '%$keyword%')
-          .limit(20);
-      if (!mounted) return;
-      setState(() => _foodList = res);
-      if (_foodList.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak ditemukan')),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-    } finally {
-      if (mounted) setState(() => _loadingFood = false);
+     final perf = Performance('Search Food'); // ⏱️ start
+  setState(() => _loadingFood = true);
+
+  try {
+    final res = await supabase
+        .from('makanan')
+        .select('id_makanan, nama_makanan')
+        .ilike('nama_makanan', '%$keyword%')
+        .limit(20);
+    if (!mounted) return;
+
+    setState(() => _foodList = res);
+    perf.lap('API return'); // ⏱️ setelah API selesai
+
+    if (_foodList.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tidak ditemukan')),
+      );
     }
+  } catch (e) {
+    perf.lap('error');
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+  } finally {
+    if (mounted) setState(() => _loadingFood = false);
+    perf.finish(); // ⏱️ total selesai
   }
+}
 
   void _addFood(int id, String nama) {
     setState(() {
@@ -125,107 +133,131 @@ class _FoodLogPageState extends State<FoodLogPage>
      AKTIVITAS FUNCTIONS
   ================================================= */
   Future<void> _searchActivity() async {
-    final keyword = _activitySearchCtrl.text.trim();
-    if (keyword.isEmpty) return;
-    setState(() => _loadingAct = true);
-    try {
-      final res = await supabase
-          .from('aktivitas')
-          .select('id_aktivitas, nama_aktivitas')
-          .ilike('nama_aktivitas', '%$keyword%')
-          .limit(20);
-      if (!mounted) return;
-      setState(() => _activityList = res);
-      if (_activityList.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tidak ditemukan')),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-    } finally {
-      if (mounted) setState(() => _loadingAct = false);
+  final keyword = _activitySearchCtrl.text.trim();
+  if (keyword.isEmpty) return;
+
+  final perf = Performance('Search Activity'); // ⏱️ start
+  setState(() => _loadingAct = true);
+
+  try {
+    final res = await supabase
+        .from('aktivitas')
+        .select('id_aktivitas, nama_aktivitas')
+        .ilike('nama_aktivitas', '%$keyword%')
+        .limit(20);
+    if (!mounted) return;
+
+    setState(() => _activityList = res);
+    perf.lap('API return'); // ⏱️ setelah API selesai
+
+    if (_activityList.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tidak ditemukan')),
+      );
     }
+  } catch (e) {
+    perf.lap('error');
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+  } finally {
+    if (mounted) setState(() => _loadingAct = false);
+    perf.finish(); // ⏱️ total selesai
   }
+}
 
   void _addActivity(int id, String nama) {
-    setState(() {
-      _activityItems.add(ActivityItem(
-        idAktivitas: id,
-        namaAktivitas: nama,
-        menit: 0,
-        tanggal: _selectedDate,
-      ));
-    });
-  }
-
-  void _removeActivity(int index) => setState(() => _activityItems.removeAt(index));
+  final perf = Performance('Add Activity'); // ⏱️ start
+  setState(() {
+    _activityItems.add(ActivityItem(
+      idAktivitas: id,
+      namaAktivitas: nama,
+      menit: 0,
+      tanggal: _selectedDate,
+    ));
+  });
+  perf.lap('UI updated'); // ⏱️ setelah UI ditambah
+  perf.finish(); // ⏱️ total selesai
+}
+  void _removeActivity(int index) {
+  final perf = Performance('Remove Activity'); // ⏱️ start
+  setState(() => _activityItems.removeAt(index));
+  perf.lap('UI updated'); // ⏱️ setelah UI dihapus
+  perf.finish(); // ⏱️ total selesai
+}
 
   /* =================================================
      SIMPAN SEMUA (BATCH INSERT)
   ================================================= */
   Future<void> _saveAll() async {
-    if (_foodItems.isEmpty && _activityItems.isEmpty) {
+  if (_foodItems.isEmpty && _activityItems.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Tambahkan minimal 1 item')),
+    );
+    return;
+  }
+
+  /* validasi cepat */
+  for (var it in _foodItems) {
+    if (it.gram <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tambahkan minimal 1 item')),
+        SnackBar(content: Text('${it.namaMakanan} belum diisi gramnya')),
       );
       return;
     }
-
-    for (var it in _foodItems) {
-      if (it.gram <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${it.namaMakanan} belum diisi gramnya')),
-        );
-        return;
-      }
-    }
-    for (var it in _activityItems) {
-      if (it.menit <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${it.namaAktivitas} belum diisi menitnya')),
-        );
-        return;
-      }
-    }
-
-    setState(() => _loadingFood = true);
-    try {
-      final userId = supabase.auth.currentUser!.id;
-
-      if (_foodItems.isNotEmpty) {
-        final foodBatch = _foodItems.map((it) => {
-          'id_user': userId,
-          'id_makanan': it.idMakanan,
-          'porsi_gram': it.gram,
-          'tanggal_catat': it.tanggal.toIso8601String().split('T')[0],
-        }).toList();
-        await supabase.from('log_makanan').insert(foodBatch);
-      }
-
-      if (_activityItems.isNotEmpty) {
-        final actBatch = _activityItems.map((it) => {
-          'id_user': userId,
-          'id_aktivitas': it.idAktivitas,
-          'durasi_menit': it.menit,
-          'tanggal_catat': it.tanggal.toIso8601String().split('T')[0],
-        }).toList();
-        await supabase.from('log_aktivitas').insert(actBatch);
-      }
-
-      if (!mounted) return;
+  }
+  for (var it in _activityItems) {
+    if (it.menit <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua log tersimpan ✅')),
+        SnackBar(content: Text('${it.namaAktivitas} belum diisi menitnya')),
       );
-      _reset();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
-    } finally {
-      if (mounted) setState(() => _loadingFood = false);
+      return;
     }
   }
+
+  final perf = Performance('Save All Log'); // ⏱️ start
+  setState(() => _loadingFood = true);
+
+  try {
+    final userId = supabase.auth.currentUser!.id;
+
+    /* insert makanan */
+    if (_foodItems.isNotEmpty) {
+      final foodBatch = _foodItems.map((it) => {
+        'id_user': userId,
+        'id_makanan': it.idMakanan,
+        'porsi_gram': it.gram,
+        'tanggal_catat': it.tanggal.toIso8601String().split('T')[0],
+      }).toList();
+      await supabase.from('log_makanan').insert(foodBatch);
+      perf.lap('insert food done');
+    }
+
+    /* insert aktivitas */
+    if (_activityItems.isNotEmpty) {
+      final actBatch = _activityItems.map((it) => {
+        'id_user': userId,
+        'id_aktivitas': it.idAktivitas,
+        'durasi_menit': it.menit,
+        'tanggal_catat': it.tanggal.toIso8601String().split('T')[0],
+      }).toList();
+      await supabase.from('log_aktivitas').insert(actBatch);
+      perf.lap('insert activity done');
+    }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Semua log tersimpan ✅')),
+    );
+    _reset();
+  } catch (e) {
+    perf.lap('error');
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+  } finally {
+    if (mounted) setState(() => _loadingFood = false);
+    perf.finish(); // ⏱️ total waktu simpan
+  }
+}
 
   void _reset() {
     _foodSearchCtrl.clear();

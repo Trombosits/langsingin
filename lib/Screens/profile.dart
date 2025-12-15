@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:langsingin/Screens/login.dart';
 import 'package:langsingin/main.dart';
+import 'package:langsingin/Utility/performance.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -10,6 +11,47 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+
+    /* ---------- DATA USER ---------- */
+  Map<String, dynamic>? _userRow; // row dari table users
+  bool _isLoading = true;
+
+    /* ---------- LIFE-CYCLE ---------- */
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData(); // load + ukur performa
+  }
+
+  /// Load data awal (user + summary) + ukur waktu
+  Future<void> _loadProfileData() async {
+    final perf = Performance('Load Profile');
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      final row = await supabase
+          .from('users')
+          .select('nama_lengkap, target_mode, target_kalori, tdee')
+          .eq('id_user', user.id)
+          .single();
+      perf.lap('API users');
+
+      if (mounted) {
+        setState(() {
+          _userRow = row;
+          _isLoading = false;
+        });
+        perf.lap('UI rendered');
+      }
+    } catch (e) {
+      perf.lap('error');
+      if (mounted) setState(() => _isLoading = false);
+    } finally {
+      perf.finish();
+    }
+  }
+
   /* ---------- LOGOUT ---------- */
   Future<void> _logout(BuildContext context) async {
     await supabase.auth.signOut();
@@ -22,36 +64,46 @@ class _ProfilePageState extends State<ProfilePage> {
 
   /* ---------- UPDATE TARGET ---------- */
   Future<void> _updateTargetMode(String newMode) async {
+    final perf = Performance('Update Target');
     final user = supabase.auth.currentUser;
     if (user == null) return;
 
-    final res = await supabase
-        .from('users')
-        .select('tdee')
-        .eq('id_user', user.id)
-        .single();
+    try {
+      /* hitung ulang target_kalori */
+      final res = await supabase
+          .from('users')
+          .select('tdee')
+          .eq('id_user', user.id)
+          .single();
+      final tdee = (res['tdee'] as num).toDouble();
+      final newTarget = switch (newMode) {
+        'bulking' => (tdee + 300).round(),
+        'cutting' => (tdee - 300).round(),
+        _ => tdee.round(),
+      };
 
-    final tdee = (res['tdee'] as num).toDouble();
-    final newTarget = switch (newMode) {
-      'bulking' => (tdee + 300).round(),
-      'cutting' => (tdee - 300).round(),
-      _ => tdee.round(),
-    };
+      /* update DB */
+      await supabase.from('users').update({
+        'target_mode': newMode,
+        'target_kalori': newTarget,
+      }).eq('id_user', user.id);
+      perf.lap('DB updated');
 
-    await supabase.from('users').update({
-      'target_mode': newMode,
-      'target_kalori': newTarget,
-    }).eq('id_user', user.id);
-
-    await supabase.auth.updateUser(
-      UserAttributes(data: {'target_mode': newMode}),
-    );
-
-    if (mounted) {
-      setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Target diubah menjadi ${newMode.capitalize()}')),
+      
+      await supabase.auth.updateUser(
+        UserAttributes(data: {'target_mode': newMode}),
       );
+
+      if (mounted) {
+        setState(() {}); // refresh UI
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Target diubah menjadi ${newMode.capitalize()}')),
+        );
+      }
+    } catch (e) {
+      perf.lap('error');
+    } finally {
+      perf.finish();
     }
   }
 
